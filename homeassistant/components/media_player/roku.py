@@ -88,6 +88,7 @@ class RokuDevice(MediaPlayerDevice):
         self.channels = []
         self.current_app = None
         self.device_info = {}
+        self.is_reachable = False
 
         self.update()
 
@@ -104,10 +105,12 @@ class RokuDevice(MediaPlayerDevice):
                 self.current_app = self.roku.current_app
             else:
                 self.current_app = None
+
+            self.is_reachable = True
+
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout):
-
-            pass
+            self.is_reachable = False
 
     def get_source_list(self):
         """Get the list of applications to be used as sources."""
@@ -124,6 +127,11 @@ class RokuDevice(MediaPlayerDevice):
         if self.device_info.userdevicename:
             return self.device_info.userdevicename
         return "Roku {}".format(self.device_info.sernum)
+
+    @property
+    def available(self):
+        """Returns the availability of the device."""
+        return self.is_reachable
 
     @property
     def state(self):
